@@ -24,14 +24,19 @@ glance:
       port: 35357
       user: glance
       password: password
+      region: RegionOne
       tenant: service
     message_queue:
       engine: rabbitmq
-      host: 127.0.0.1
-      port: 5672
+      members:
+      - host: 127.0.0.1
+      - host: 127.0.1.1
+      - host: 127.0.2.1
       user: openstack
       password: password
       virtual_host: '/openstack'
-      ha_queues: true
     storage:
       engine: file
+    audit:
+      filter_factory: 'keystonemiddleware.audit:filter_factory'
+      map_file: '/etc/pycadf/glance_api_audit_map.conf'

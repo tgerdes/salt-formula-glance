@@ -1,4 +1,5 @@
 {%- from "glance/map.jinja" import server with context %}
+{% set storage_engines = server.storage.engine.split(',') %}
 [DEFAULT]
 # Show more verbose log output (sets INFO log level output)
 #verbose = False
@@ -246,8 +247,17 @@ notifier_strategy=rabbit
 notification_driver = messagingv2
 # Configuration options if sending notifications via rabbitmq (these are
 # the defaults)
+#
+{%- if server.message_queue.members is defined %}
+rabbit_hosts = {% for member in server.message_queue.members -%}
+                   {{ member.host }}:{{ member.get('port', 5672) }}
+                   {%- if not loop.last -%},{%- endif -%}
+               {%- endfor -%}
+{%- else %}
 rabbit_host = {{ server.message_queue.host }}
 rabbit_port = {{ server.message_queue.port }}
+{%- endif %}
+
 rabbit_use_ssl = false
 rabbit_userid = {{ server.message_queue.user }}
 rabbit_password = {{ server.message_queue.password }}
@@ -568,12 +578,12 @@ flavor=keystone
 # by the stores option.
 # Deprecated group/name - [DEFAULT]/default_store
 # Default: 'file'
-{%- if server.storage.engine == 'file' %}
+{%- if 'file' in storage_engines %}
 default_store = file
 stores = glance.store.filesystem.Store,
          glance.store.http.Store
 {%- else %}
-default_store = {{ server.storage.engine }}
+default_store = {{ storage_engines[0]  }}
 stores = {{ server.storage.engine }}
 {%- endif %}
 # ============ Filesystem Store Options ========================
@@ -756,7 +766,7 @@ s3_store_create_bucket_on_put = False
 
 # ============ RBD Store Options =============================
 
-{%- if server.storage.engine == 'rbd' %}
+{%- if 'rbd' in storage_engines %}
 # ============ RBD Store Options =============================
 
 # Ceph configuration file path
