@@ -220,6 +220,19 @@ Enable/disable diffent API versions
         enable_v2_api: True
         enable_v2_registry: True
 
+Enable Tasks API for automatic image conversion.
+
+.. code-block:: yaml
+
+    glance:
+      server:
+        storage:
+          engine: rbd,file,http
+        tasks:
+          enabled: True
+          work_dir: /var/lib/glance/import
+          conversion_format: raw
+
 Enable Viewing Multiple Locations
 ---------------------------------
 If you want to expose all locations available (for example when you have
